@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "83875234510",
+    "project_id": "fir-money-20c76",
+    "storage_bucket": "fir-money-20c76.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:83875234510:android:9424c2e8a6454d468b869f",
+        "android_client_info": {
+          "package_name": "com.example.fluttermoney"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8jvuCFv2eihAgqg6lwHTpYrpzDXtU_Qo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
