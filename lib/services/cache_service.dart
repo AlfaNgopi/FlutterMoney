@@ -28,7 +28,7 @@ class CacheService {
     _isLoading = true;
 
     try {
-      print('Loading fresh data from Firestore...');
+      debugPrint('Loading fresh data from Firestore...');
 
       // Load alokasi data
       final alokasiSnapshot = await FirebaseFirestore.instance
@@ -39,7 +39,7 @@ class CacheService {
           .map((doc) => AlokasiModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Error loading data: $e');
+      debugPrint('Error loading data: $e');
       rethrow;
     } finally {
       _isLoading = false;

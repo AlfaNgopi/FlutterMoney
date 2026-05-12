@@ -221,7 +221,7 @@ class HomeScreen extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: cache.getColorForAlokasi(expense.alokasi).withOpacity(0.1),
+                                color: cache.getColorForAlokasi(expense.alokasi).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(

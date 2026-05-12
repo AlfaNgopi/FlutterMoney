@@ -66,12 +66,7 @@ class SelectAlokasiScreen extends StatelessWidget {
                   ),
                   child: InkWell(
                     onTap: () {
-                      
-                        context.pushNamed(
-                          'select-subcategory',
-                          extra: alokasi,
-                        );
-                      
+                      context.pushNamed('select-subcategory', extra: alokasi);
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
@@ -82,8 +77,8 @@ class SelectAlokasiScreen extends StatelessWidget {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            color.withOpacity(0.15),
-                            color.withOpacity(0.05),
+                            color.withValues(alpha: 0.5),
+                            color.withValues(alpha: 0.5),
                           ],
                         ),
                       ),
@@ -94,7 +89,7 @@ class SelectAlokasiScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: color.withOpacity(0.2),
+                                  color: color.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(icon, size: 30, color: color),
@@ -212,7 +207,7 @@ class SelectAlokasiScreen extends StatelessWidget {
                                 minHeight: 8,
                               ),
                             ),
-                          ]
+                          ],
                         ],
                       ),
                     ),
@@ -227,6 +222,7 @@ class SelectAlokasiScreen extends StatelessWidget {
   }
 
   Future<double> _getTotalForAlokasi(String alokasiName) async {
+    debugPrint("enter gettotalforalokasi");
     try {
       final firestoreService = FirestoreService();
       return await firestoreService.getMonthlyTotal(
@@ -235,7 +231,7 @@ class SelectAlokasiScreen extends StatelessWidget {
         alokasi: alokasiName,
       );
     } catch (e) {
-      print('Error getting total for $alokasiName: $e');
+      debugPrint('Error getting total for $alokasiName: $e');
       return 0;
     }
   }

@@ -1,12 +1,12 @@
 // screens/expense_detail_screen.dart
 import 'package:flutter/material.dart';
-import 'package:fluttermoney/constants/categories.dart';
+import 'package:fluttermoney/models/alokasiModel.dart';
 import 'package:fluttermoney/models/expenses.dart';
 import 'package:fluttermoney/services/firebase_service.dart';
 import 'package:go_router/go_router.dart';
 
 class ExpenseDetailScreen extends StatefulWidget {
-  final String alokasi;
+  final AlokasiModel alokasi;
   final String subCategory;
 
   const ExpenseDetailScreen({
@@ -59,13 +59,12 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   Future<void> _saveExpense() async {
     final expense = Expense(
       date: _selectedDate,
-      alokasi: widget.alokasi,
+      alokasi: widget.alokasi.name,
       subCategory: widget.subCategory,
       description: _descriptionController.text.trim(),
       amount: double.parse(_amountController.text),
     );
 
-    print('asdfsd');
 
     await _firestoreService.addExpense(expense);
   }
@@ -99,7 +98,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                             style: TextStyle(fontSize: 16),
                           ),
                           Text(
-                            widget.alokasi,
+                            widget.alokasi.name,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -136,12 +135,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: const Text('Tanggal'),
-                subtitle: Text(
-                  _selectedDate.day.toString().padLeft(2, '0') +
-                      '/' +
-                      _selectedDate.month.toString().padLeft(2, '0') +
-                      '/' +
-                      _selectedDate.year.toString(),
+                subtitle: Text("${_selectedDate.day.toString().padLeft(2, '0')} / ${_selectedDate.month.toString().padLeft(2, '0')} / ${_selectedDate.year.toString()}",
                 ),
                 onTap: () => _selectDate(context),
               ),
@@ -178,8 +172,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                   labelText: 'Deskripsi tambahan (opsional)',
                   prefixIcon: const Icon(Icons.description),
                   border: const OutlineInputBorder(),
-                  helperText:
-                      'Contoh: Makan siang di kantin, Beli baju di mall, dll',
+                  
                 ),
                 maxLines: 3,
               ),

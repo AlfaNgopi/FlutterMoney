@@ -1,20 +1,19 @@
 // services/firestore_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttermoney/models/expenses.dart';
-import 'cache_service.dart';
+import 'package:flutter/foundation.dart';
 
 class FirestoreService {
   final CollectionReference _expensesCollection = FirebaseFirestore.instance
       .collection('expenses');
-  final CacheService _cache = CacheService();
 
   // Create - Add new expense
   Future<void> addExpense(Expense expense) async {
     try {
       await _expensesCollection.add(expense.toJson());
-      print('Expense added successfully');
+      debugPrint('Expense added successfully');
     } catch (e) {
-      print('Error adding expense: $e');
+      debugPrint('Error adding expense: $e');
       rethrow;
     }
   }
@@ -45,9 +44,9 @@ class FirestoreService {
   Future<void> updateExpense(String docId, Expense expense) async {
     try {
       await _expensesCollection.doc(docId).update(expense.toJson());
-      print('Expense updated successfully');
+      debugPrint('Expense updated successfully');
     } catch (e) {
-      print('Error updating expense: $e');
+      debugPrint('Error updating expense: $e');
       rethrow;
     }
   }
@@ -56,9 +55,9 @@ class FirestoreService {
   Future<void> deleteExpense(String docId) async {
     try {
       await _expensesCollection.doc(docId).delete();
-      print('Expense deleted successfully');
+      debugPrint('Expense deleted successfully');
     } catch (e) {
-      print('Error deleting expense: $e');
+      debugPrint('Error deleting expense: $e');
       rethrow;
     }
   }
@@ -89,14 +88,14 @@ class FirestoreService {
       query = query.where('alokasi', isEqualTo: alokasi);
     }
 
+
     final snapshot = await query.get();
+
+    
 
     return snapshot.docs.fold<double>(
       0,
       (sum, doc) => sum + ((doc['amount'] as num).toDouble()),
     );
   }
-
-  
-  
 }
