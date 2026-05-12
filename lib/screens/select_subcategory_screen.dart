@@ -1,22 +1,20 @@
 // screens/select_subcategory_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:fluttermoney/constants/categories.dart';
+import 'package:fluttermoney/models/alokasiModel.dart';
 import 'package:go_router/go_router.dart';
 
 class SelectSubCategoryScreen extends StatelessWidget {
-  final String alokasi;
+  final AlokasiModel alokasi;
 
   const SelectSubCategoryScreen({super.key, required this.alokasi});
 
   @override
   Widget build(BuildContext context) {
-    final subCategories = SUB_CATEGORIES[alokasi] ?? [];
+    final subCategories = alokasi.subKategori;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Detail $alokasi'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text('Detail $alokasi'), centerTitle: true),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: subCategories.length,
@@ -30,10 +28,7 @@ class SelectSubCategoryScreen extends StatelessWidget {
                 onTap: () {
                   context.pushNamed(
                     'expense-detail',
-                    extra: {
-                      'alokasi': alokasi,
-                      'subCategory': subCategory,
-                    },
+                    extra: {'alokasi': alokasi, 'subCategory': subCategory},
                   );
                 },
                 borderRadius: BorderRadius.circular(12),
@@ -45,10 +40,7 @@ class SelectSubCategoryScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        _getIconForSubCategory(subCategory),
-                        size: 28,
-                      ),
+                      Icon(_getIconForSubCategory(subCategory), size: 28),
                       const SizedBox(width: 20),
                       Expanded(
                         child: Text(

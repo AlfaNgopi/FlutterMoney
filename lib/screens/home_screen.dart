@@ -303,7 +303,8 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Budget: Rp ${_formatAmount(cache.settings.gajiBulanan)}',
+                      // TODO:
+                      'Budget: Rp ${_formatAmount(3000000)}',
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,

@@ -10,10 +10,7 @@ class CacheService {
 
   // Cache data
   List<AlokasiModel>? _cachedAlokasiList;
-  SettingsModel? _cachedSettings;
   bool _isLoading = false;
-  DateTime? _lastLoadTime;
-  final Duration _cacheDuration = Duration(minutes: 30); // Cache selama 30 menit
 
   // Getters untuk akses konstanta
   List<AlokasiModel> get alokasiList {
@@ -23,57 +20,24 @@ class CacheService {
     return _cachedAlokasiList!;
   }
 
-  SettingsModel get settings {
-    if (_cachedSettings == null) {
-      throw Exception('Settings not loaded yet. Call loadAllData() first.');
-    }
-    return _cachedSettings!;
-  }
-
-  // Cek apakah cache masih valid
-  bool get isCacheValid {
-    if (_lastLoadTime == null) return false;
-    return DateTime.now().difference(_lastLoadTime!) < _cacheDuration;
-  }
-
   // Load semua data (panggil sekali di awal aplikasi)
   Future<void> loadAllData({bool forceRefresh = false}) async {
     // Jika sudah loading, tunggu
     if (_isLoading) return;
-    
-    // Jika cache masih valid dan tidak dipaksa refresh, skip
-    if (!forceRefresh && isCacheValid && _cachedAlokasiList != null && _cachedSettings != null) {
-      print('Using cached data');
-      return;
-    }
 
     _isLoading = true;
-    
+
     try {
       print('Loading fresh data from Firestore...');
-      
+
       // Load alokasi data
       final alokasiSnapshot = await FirebaseFirestore.instance
           .collection('alokasis')
           .get();
-      
+
       _cachedAlokasiList = alokasiSnapshot.docs
           .map((doc) => AlokasiModel.fromFirestore(doc))
           .toList();
-      
-      // Load settings data
-      final settingsSnapshot = await FirebaseFirestore.instance
-          .collection('settings')
-          .doc('status')
-          .get();
-      
-      if (settingsSnapshot.exists) {
-        _cachedSettings = SettingsModel.fromFirestore(settingsSnapshot);
-      }
-      
-      _lastLoadTime = DateTime.now();
-      print('Data loaded successfully. Alokasi count: ${_cachedAlokasiList?.length}, Settings: ${_cachedSettings != null}');
-      
     } catch (e) {
       print('Error loading data: $e');
       rethrow;
@@ -105,7 +69,7 @@ class CacheService {
   Color getColorForAlokasi(String alokasiName) {
     final alokasi = getAlokasiByName(alokasiName);
     if (alokasi == null) return Colors.grey;
-    
+
     switch (alokasi.color.toLowerCase()) {
       case 'blue':
         return Colors.blue;
@@ -126,7 +90,7 @@ class CacheService {
   IconData getIconForAlokasi(String alokasiName) {
     final alokasi = getAlokasiByName(alokasiName);
     if (alokasi == null) return Icons.category;
-    
+
     switch (alokasi.icon) {
       case 'shopping_cart':
         return Icons.shopping_cart;
@@ -134,11 +98,12 @@ class CacheService {
         return Icons.favorite;
       case 'people':
         return Icons.people;
+      case 'house':
+        return Icons.house;
       default:
         return Icons.category;
     }
   }
 
-  // Check if data is loaded
-  bool get isDataLoaded => _cachedAlokasiList != null && _cachedSettings != null;
+  
 }

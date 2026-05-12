@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:fluttermoney/models/alokasiModel.dart';
 import 'package:fluttermoney/screens/expense_detail_screen.dart';
 import 'package:fluttermoney/screens/home_screen.dart';
 import 'package:fluttermoney/screens/select_alokasi_screen.dart';
@@ -50,7 +51,7 @@ class MyApp extends StatelessWidget {
         path: '/select-subcategory',
         name: 'select-subcategory',
         builder: (context, state) {
-          final alokasi = state.extra as String;
+          final alokasi = state.extra as AlokasiModel;
           return SelectSubCategoryScreen(alokasi: alokasi);
         },
       ),

@@ -27,18 +27,12 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   final _amountController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
-  bool _isFixedAmount = false;
-  double? _fixedAmount;
+  
 
   @override
   void initState() {
     super.initState();
-    // Check if this is Bayar Kos with fixed amount
-    if (widget.alokasi == 'Bayar Kos') {
-      _isFixedAmount = true;
-      _fixedAmount = HARGA_KOS;
-      _amountController.text = HARGA_KOS.toStringAsFixed(0);
-    }
+    
   }
 
   @override
@@ -157,9 +151,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               // Amount Field
               TextFormField(
                 controller: _amountController,
-                enabled: !_isFixedAmount,
                 decoration: InputDecoration(
-                  labelText: _isFixedAmount ? 'Amount (Fixed)' : 'Amount (Rp)',
+                  labelText: 'Amount (Rp)',
                   prefixIcon: const Icon(Icons.attach_money),
                   border: const OutlineInputBorder(),
                   suffixText: 'IDR',

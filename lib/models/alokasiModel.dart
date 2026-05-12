@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AlokasiModel {
   final String id;
+  final double budget;
   final String color;
   final String icon;
   final String name;
@@ -10,6 +11,7 @@ class AlokasiModel {
 
   AlokasiModel({
     required this.id,
+    required this.budget,
     required this.color,
     required this.icon,
     required this.name,
@@ -20,6 +22,7 @@ class AlokasiModel {
     final data = doc.data() as Map<String, dynamic>;
     return AlokasiModel(
       id: doc.id,
+      budget: doc['budget'] as double,
       color: data['color'] as String,
       icon: data['icon'] as String,
       name: data['name'] as String,
@@ -28,30 +31,4 @@ class AlokasiModel {
   }
 }
 
-// models/settings_model.dart
-class SettingsModel {
-  final double alokasiKebutuhan;
-  final double alokasiKeinginan;
-  final double alokasiSosial;
-  final double gajiBulanan;
-  final double hargaKos;
 
-  SettingsModel({
-    required this.alokasiKebutuhan,
-    required this.alokasiKeinginan,
-    required this.alokasiSosial,
-    required this.gajiBulanan,
-    required this.hargaKos,
-  });
-
-  factory SettingsModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return SettingsModel(
-      alokasiKebutuhan: (data['alokasiKebutuhan'] as num).toDouble(),
-      alokasiKeinginan: (data['alokasiKeinginan'] as num).toDouble(),
-      alokasiSosial: (data['alokasiSosial'] as num).toDouble(),
-      gajiBulanan: (data['gajiBulanan'] as num).toDouble(),
-      hargaKos: (data['hargaKos'] as num).toDouble(),
-    );
-  }
-}

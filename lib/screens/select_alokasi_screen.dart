@@ -10,19 +10,6 @@ class SelectAlokasiScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cache = CacheService();
-    
-    // Pastikan data sudah dimuat
-    if (!cache.isDataLoaded) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Pilih Alokasi'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
 
     final alokasiList = cache.alokasiList;
 
@@ -60,16 +47,16 @@ class SelectAlokasiScreen extends StatelessWidget {
           final alokasi = alokasiList[index];
           final color = cache.getColorForAlokasi(alokasi.name);
           final icon = cache.getIconForAlokasi(alokasi.name);
-          
+
           // Dapatkan jumlah pengeluaran untuk alokasi ini
           return FutureBuilder<double>(
             future: _getTotalForAlokasi(alokasi.name),
             builder: (context, totalSnapshot) {
               final total = totalSnapshot.data ?? 0;
-              final budget = _getBudgetForAlokasi(alokasi.name, cache);
+              final budget = alokasi.budget;
               final remaining = budget - total;
               final isOverBudget = remaining < 0;
-              
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Card(
@@ -79,25 +66,12 @@ class SelectAlokasiScreen extends StatelessWidget {
                   ),
                   child: InkWell(
                     onTap: () {
-                      // Navigate to next step based on selection
-                      if (alokasi.name == 'Bayar Kos') {
-                        // Auto-select subcategory and go to detail
-                        context.pushNamed(
-                          'expense-detail',
-                          extra: {
-                            'alokasi': alokasi.name,
-                            'subCategory': alokasi.subKategori.isNotEmpty 
-                                ? alokasi.subKategori[0] 
-                                : 'Sewa Bulanan',
-                            'suggestedAmount': cache.settings.hargaKos,
-                          },
-                        );
-                      } else {
+                      
                         context.pushNamed(
                           'select-subcategory',
-                          extra: alokasi.name,
+                          extra: alokasi,
                         );
-                      }
+                      
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
@@ -123,11 +97,7 @@ class SelectAlokasiScreen extends StatelessWidget {
                                   color: color.withOpacity(0.2),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
-                                  icon,
-                                  size: 30,
-                                  color: color,
-                                ),
+                                child: Icon(icon, size: 30, color: color),
                               ),
                               const SizedBox(width: 20),
                               Expanded(
@@ -160,9 +130,8 @@ class SelectAlokasiScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          
-                          // Budget info for non-Kos categories
-                          if (alokasi.name != 'Bayar Kos') ...[
+
+                          ...[
                             const SizedBox(height: 16),
                             Divider(color: Colors.grey[300]),
                             const SizedBox(height: 8),
@@ -223,7 +192,9 @@ class SelectAlokasiScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
-                                        color: isOverBudget ? Colors.red : Colors.green,
+                                        color: isOverBudget
+                                            ? Colors.red
+                                            : Colors.green,
                                       ),
                                     ),
                                   ],
@@ -241,79 +212,7 @@ class SelectAlokasiScreen extends StatelessWidget {
                                 minHeight: 8,
                               ),
                             ),
-                          ] else ...[
-                            // Bayar Kos specific info
-                            const SizedBox(height: 16),
-                            Divider(color: Colors.grey[300]),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Harga Kos',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                Text(
-                                  'Rp ${_formatAmount(cache.settings.hargaKos)}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (total > 0) ...[
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Sudah dibayar',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  Text(
-                                    'Rp ${_formatAmount(total)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (total >= cache.settings.hargaKos)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Icon(Icons.check_circle, color: Colors.green, size: 16),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Kos sudah lunas bulan ini',
-                                          style: TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ],
+                          ]
                         ],
                       ),
                     ),
@@ -341,25 +240,12 @@ class SelectAlokasiScreen extends StatelessWidget {
     }
   }
 
-  double _getBudgetForAlokasi(String alokasiName, CacheService cache) {
-    switch (alokasiName) {
-      case 'Kebutuhan':
-        return cache.settings.alokasiKebutuhan;
-      case 'Sosial':
-        return cache.settings.alokasiSosial;
-      case 'Keinginan':
-        return cache.settings.alokasiKeinginan;
-      case 'Bayar Kos':
-        return cache.settings.hargaKos;
-      default:
-        return 0;
-    }
-  }
-
   String _formatAmount(double amount) {
-    return amount.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    );
+    return amount
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
   }
 }
