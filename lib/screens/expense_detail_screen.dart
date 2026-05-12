@@ -25,7 +25,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
-  
+
   DateTime _selectedDate = DateTime.now();
   bool _isFixedAmount = false;
   double? _fixedAmount;
@@ -63,55 +63,23 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   }
 
   Future<void> _saveExpense() async {
-    if (_formKey.currentState!.validate()) {
-      final expense = Expense(
-        date: _selectedDate,
-        alokasi: widget.alokasi,
-        subCategory: widget.subCategory,
-        description: _descriptionController.text.trim(),
-        amount: double.parse(_amountController.text),
-      );
+    final expense = Expense(
+      date: _selectedDate,
+      alokasi: widget.alokasi,
+      subCategory: widget.subCategory,
+      description: _descriptionController.text.trim(),
+      amount: double.parse(_amountController.text),
+    );
 
-      await _firestoreService.addExpense(expense);
+    print('asdfsd');
 
-
-
-      // Show success dialog and navigate back
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Berhasil!'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${widget.alokasi} - ${widget.subCategory}'),
-              Text('Amount: Rp${expense.amount.toStringAsFixed(0)}'),
-              if (_descriptionController.text.isNotEmpty)
-                Text('Note: ${_descriptionController.text}'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                context.goNamed('home'); // Go back to home
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+    await _firestoreService.addExpense(expense);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detail Transaksi'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Detail Transaksi'), centerTitle: true),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -132,7 +100,10 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Alokasi:', style: TextStyle(fontSize: 16)),
+                          const Text(
+                            'Alokasi:',
+                            style: TextStyle(fontSize: 16),
+                          ),
                           Text(
                             widget.alokasi,
                             style: const TextStyle(
@@ -146,7 +117,10 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Sub-Kategori:', style: TextStyle(fontSize: 16)),
+                          const Text(
+                            'Sub-Kategori:',
+                            style: TextStyle(fontSize: 16),
+                          ),
                           Text(
                             widget.subCategory,
                             style: const TextStyle(
@@ -161,23 +135,25 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Date Picker
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: const Text('Tanggal'),
                 subtitle: Text(
-                  _selectedDate.day.toString().padLeft(2, '0') + '/' +
-                  _selectedDate.month.toString().padLeft(2, '0') + '/' +
-                  _selectedDate.year.toString(),
+                  _selectedDate.day.toString().padLeft(2, '0') +
+                      '/' +
+                      _selectedDate.month.toString().padLeft(2, '0') +
+                      '/' +
+                      _selectedDate.year.toString(),
                 ),
                 onTap: () => _selectDate(context),
               ),
-              
+
               const Divider(),
-              
+
               // Amount Field
               TextFormField(
                 controller: _amountController,
@@ -199,9 +175,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                   return null;
                 },
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Description Field (Optional)
               TextFormField(
                 controller: _descriptionController,
@@ -209,19 +185,24 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                   labelText: 'Deskripsi tambahan (opsional)',
                   prefixIcon: const Icon(Icons.description),
                   border: const OutlineInputBorder(),
-                  helperText: 'Contoh: Makan siang di kantin, Beli baju di mall, dll',
+                  helperText:
+                      'Contoh: Makan siang di kantin, Beli baju di mall, dll',
                 ),
                 maxLines: 3,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Submit Button
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton.icon(
-                  onPressed: _saveExpense,
+                  onPressed: () {
+                    _saveExpense();
+                    context.pop();
+                    context.goNamed('home');
+                  },
                   icon: const Icon(Icons.save),
                   label: const Text(
                     'Simpan Transaksi',

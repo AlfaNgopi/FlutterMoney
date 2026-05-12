@@ -1,10 +1,12 @@
 // services/firestore_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttermoney/models/expenses.dart';
+import 'cache_service.dart';
 
 class FirestoreService {
   final CollectionReference _expensesCollection = FirebaseFirestore.instance
       .collection('expenses');
+  final CacheService _cache = CacheService();
 
   // Create - Add new expense
   Future<void> addExpense(Expense expense) async {
@@ -73,19 +75,28 @@ class FirestoreService {
     );
   }
 
-  // Get monthly total
-  Future<double> getMonthlyTotal(int year, int month) async {
+  // Get monthly total with optional alokasi filter
+  Future<double> getMonthlyTotal(int year, int month, {String? alokasi}) async {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 0);
 
-    final snapshot = await _expensesCollection
+    Query query = _expensesCollection
         .where('date', isGreaterThanOrEqualTo: start.toIso8601String())
-        .where('date', isLessThanOrEqualTo: end.toIso8601String())
-        .get();
+        .where('date', isLessThanOrEqualTo: end.toIso8601String());
+
+    // Add alokasi filter if provided
+    if (alokasi != null) {
+      query = query.where('alokasi', isEqualTo: alokasi);
+    }
+
+    final snapshot = await query.get();
 
     return snapshot.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['amount'] as double),
+      (sum, doc) => sum + ((doc['amount'] as num).toDouble()),
     );
   }
+
+  
+  
 }

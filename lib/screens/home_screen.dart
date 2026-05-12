@@ -1,9 +1,10 @@
 // screens/home_screen.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttermoney/models/expenses.dart';
+import 'package:fluttermoney/services/cache_service.dart';
 import 'package:fluttermoney/services/firebase_service.dart';
 import 'package:go_router/go_router.dart';
-import '../models/expenses.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,37 +12,47 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firestoreService = FirestoreService();
+    final cache = CacheService();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Expense Tracker'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // Tombol refresh manual jika perlu
           IconButton(
-            icon: const Icon(Icons.bar_chart),
-            //TODO:
-            // onPressed: () => context.pushNamed('statistics'),
-            onPressed: () => {},
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              await cache.refreshData();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Data refreshed!')),
+                );
+              }
+            },
           ),
         ],
       ),
       body: Column(
         children: [
-          // Summary Cards
-          _buildSummaryCards(firestoreService),
+          // Summary Cards dengan data dari cache
+          _buildSummaryCards(firestoreService, cache),
+          const SizedBox(height: 8),
+          // Category Cards dari cache
+          // _buildCategoryCards(cache),
           const SizedBox(height: 8),
           // Expenses List Header
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Recent Expenses',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 TextButton(
                   onPressed: () => context.pushNamed('all-expenses'),
@@ -56,11 +67,15 @@ class HomeScreen extends StatelessWidget {
               stream: firestoreService.getExpenses(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
                 }
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
 
                 final expenses = snapshot.data?.docs ?? [];
@@ -70,16 +85,25 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.receipt_long, size: 64, color: Colors.grey),
+                        Icon(
+                          Icons.receipt_long,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 16),
                         Text(
                           'No expenses yet',
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey,
+                          ),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Tap the + button to add your first expense',
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -90,20 +114,19 @@ class HomeScreen extends StatelessWidget {
                   itemCount: expenses.length,
                   itemBuilder: (context, index) {
                     final expenseDoc = expenses[index];
-                    final expenseData =
-                        expenseDoc.data() as Map<String, dynamic>;
-                    final expense = Expense.fromJson(
-                      expenseData,
-                      expenseDoc.id,
-                    );
-
+                    final expenseData = expenseDoc.data() as Map<String, dynamic>;
+                    final expense = Expense.fromJson(expenseData, expenseDoc.id);
+                    
                     return Dismissible(
                       key: Key(expenseDoc.id),
                       background: Container(
                         color: Colors.red,
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
                       ),
                       direction: DismissDirection.endToStart,
                       onDismissed: (direction) async {
@@ -135,13 +158,11 @@ class HomeScreen extends StatelessWidget {
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: _getCategoryColor(expense.alokasi),
-                            child: Text(
-                              expense.alokasi[0],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            backgroundColor: cache.getColorForAlokasi(expense.alokasi),
+                            child: Icon(
+                              cache.getIconForAlokasi(expense.alokasi),
+                              color: Colors.white,
+                              size: 20,
                             ),
                           ),
                           title: Row(
@@ -178,7 +199,7 @@ class HomeScreen extends StatelessWidget {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: _getCategoryColor(expense.alokasi),
+                                      color: cache.getColorForAlokasi(expense.alokasi),
                                     ),
                                   ),
                                   Text(
@@ -200,21 +221,20 @@ class HomeScreen extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: cache.getColorForAlokasi(expense.alokasi).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 expense.subCategory,
-                                style: const TextStyle(fontSize: 11),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: cache.getColorForAlokasi(expense.alokasi),
+                                ),
                               ),
                             ),
                           ),
                           isThreeLine: true,
-                          // TODO:
-                          // onTap: () => context.pushNamed(
-                          //   'edit-expense',
-                          //   extra: expense,
-                          // ),
+                          onTap: () => {}
                         ),
                       ),
                     );
@@ -232,7 +252,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCards(FirestoreService firestoreService) {
+  Widget _buildSummaryCards(FirestoreService firestoreService, CacheService cache) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -281,6 +301,14 @@ class HomeScreen extends StatelessWidget {
                         );
                       },
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Budget: Rp ${_formatAmount(cache.settings.gajiBulanan)}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -291,13 +319,47 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryCards(CacheService cache) {
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: cache.alokasiList.length,
+        itemBuilder: (context, index) {
+          final alokasi = cache.alokasiList[index];
+          return Container(
+            width: 100,
+            margin: const EdgeInsets.only(right: 12),
+            child: Card(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    cache.getIconForAlokasi(alokasi.name),
+                    color: cache.getColorForAlokasi(alokasi.name),
+                    size: 32,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    alokasi.name,
+                    style: const TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   String _formatAmount(double amount) {
-    return amount
-        .toStringAsFixed(0)
-        .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+    return amount.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 
   String _formatDate(DateTime date) {
@@ -312,21 +374,6 @@ class HomeScreen extends StatelessWidget {
       return 'Yesterday';
     } else {
       return '${date.day}/${date.month}/${date.year}';
-    }
-  }
-
-  Color _getCategoryColor(String alokasi) {
-    switch (alokasi) {
-      case 'Kebutuhan':
-        return Colors.blue;
-      case 'Sosial':
-        return Colors.purple;
-      case 'Keinginan':
-        return Colors.orange;
-      case 'Bayar Kos':
-        return Colors.red;
-      default:
-        return Colors.grey;
     }
   }
 }
